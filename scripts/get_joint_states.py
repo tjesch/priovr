@@ -100,9 +100,13 @@ class GetJointStates(object):
             #~ state_msg.position.append(rpy[i])
             #~ state_msg.name.append(joint)
         state_msg.name = ['hips_roll','hips_pitch','hips_yaw','head_pitch','head_roll','head_yaw']
-        rpy_spine = self.calculate_joint_angles(hips_quat, chest_quat)
-        rpy_neck = self.calculate_joint_angles(chest_quat, head_quat)
-        rpy_neck[0] *= -1.0
+        #~ rpy_spine = self.calculate_joint_angles(hips_quat, chest_quat)
+        #~ rpy_neck = self.calculate_joint_angles(chest_quat, head_quat)
+        q_spine = tr.quaternion_multiply(hips_quat, tr.quaternion_inverse(chest_quat))
+        q_neck = tr.quaternion_multiply(chest_quat, tr.quaternion_inverse(head_quat))
+        rpy_spine = tr.euler_from_quaternion(q_spine, 'sxyz')
+        rpy_neck = tr.euler_from_quaternion(q_neck, 'sxyz')
+        #~ rpy_neck[0] *= -1.0
         state_msg.position = rpy_spine + rpy_neck
       state_msg.header.stamp = rospy.Time.now()
       state_msg.header.frame_id = 'world'
