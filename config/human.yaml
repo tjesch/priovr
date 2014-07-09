@@ -1,0 +1,11 @@
+# sensor: [roll, pitch, yaw]
+# leave it blank '' when not use
+mapping: 
+  chest: [hips_roll, hips_pitch, hips_yaw]
+  head:  [head_pitch, head_roll, head_yaw]
+  l_upper_arm:  ['', '', '']
+  l_lower_arm:  ['', '', '']
+  l_hand:  ['', '', '']
+  r_upper_arm:  ['', '', '']
+  r_lower_arm:  ['', '', '']
+  r_hand:  ['', '', '']

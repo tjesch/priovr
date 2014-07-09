@@ -1,0 +1,21 @@
+sensors:
+  chest:        0
+  head:         1
+  l_upper_arm:  8
+  l_lower_arm:  9
+  l_hand:       10
+  r_upper_arm:  12
+  r_lower_arm:  13
+  r_hand:       14
+  
+# Quaternions format: [qx, qy, qz, qw]
+tare_quaternions:
+  #~ chest:        [0, 0, 1, 0]
+  chest:        [0, 0, 0, 1]
+  head:         [0, 0, 0, 1]
+  #~ l_upper_arm:  [0, 0, 0, 1]
+  #~ l_lower_arm:  [0, 0, 0, 1]
+  #~ l_hand:       [0, 0, 0, 1]
+  #~ r_upper_arm:  [0, 0, 0, 1]
+  #~ r_lower_arm:  [0, 0, 0, 1]
+  #~ r_hand:       [0, 0, 0, 1]
