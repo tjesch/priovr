@@ -3,7 +3,9 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /RobotModel1
+        - /TF1
       Splitter Ratio: 0.5
     Tree Height: 463
   - Class: rviz/Selection
@@ -46,7 +48,7 @@ Visualization Manager:
       Plane Cell Count: 10
       Reference Frame: <Fixed Frame>
       Value: true
-    - Alpha: 1
+    - Alpha: 0.5
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -56,12 +58,38 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        head:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        head_dummy:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        head_dummy_2:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         hips:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
         hips_dummy:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_upper_arm:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        r_upper_arm_dummy:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        r_upper_arm_dummy_2:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -80,6 +108,51 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        head:
+          Value: true
+        head_dummy:
+          Value: true
+        head_dummy_2:
+          Value: true
+        hips:
+          Value: true
+        hips_dummy:
+          Value: true
+        r_upper_arm:
+          Value: true
+        r_upper_arm_dummy:
+          Value: true
+        r_upper_arm_dummy_2:
+          Value: true
+        spine:
+          Value: true
+        world:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        world:
+          hips:
+            hips_dummy:
+              spine:
+                head_dummy:
+                  head_dummy_2:
+                    head:
+                      {}
+                r_upper_arm_dummy:
+                  r_upper_arm_dummy_2:
+                    r_upper_arm:
+                      {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -104,22 +177,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.992203
+      Distance: 0.873139
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.0116206
-        Y: -0.13419
-        Z: 0.251784
+        X: -0.0221341
+        Y: -0.0394012
+        Z: 0.11845
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.260399
+      Pitch: 0.275399
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.14
+      Yaw: 4.71816
     Saved: ~
 Window Geometry:
   Displays:
