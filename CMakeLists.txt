@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   r2_gazebo
+  tf
 )
 
 catkin_python_setup()
@@ -16,6 +17,7 @@ CATKIN_DEPENDS
   geometry_msgs 
   sensor_msgs 
   r2_gazebo
+  tf
 #  DEPENDS system_lib
 )
 

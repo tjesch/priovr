@@ -1,0 +1,1 @@
+- git: {local-name: priovr, uri: 'https://github.com/tjesch/priovr', version: master}
