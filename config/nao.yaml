@@ -1,0 +1,11 @@
+# joint: [roll, pitch, yaw]
+# leave it blank '' when not use
+mapping: 
+  spine: ['','','']
+  neck:  ['HeadPitch','','HeadYaw']
+  l_shoulder:  ['LShoulderRoll', 'LShoulderPitch', '']
+  l_elbow:  ['LElbowRoll', '', 'LElbowYaw']
+  l_wrist:  ['', '', 'LWristYaw']
+  r_shoulder:  ['RShoulderRoll', 'RShoulderPitch', '']
+  r_elbow:  ['RElbowRoll', '', 'RElbowYaw']
+  r_wrist:  ['', '', 'RWristYaw']
