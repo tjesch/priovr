@@ -4,31 +4,46 @@ from sensor_msgs.msg import Imu, JointState
 from geometry_msgs.msg import Quaternion
 
 # Quaternions tools
-from PyKDL import Rotation, Vector, dot
 import numpy as np
 import tf.transformations as tr
-from tf_conversions import posemath
-
-UNIT_X = Vector(1,0,0)
-UNIT_Y = Vector(0,1,0)
-UNIT_Z = Vector(0,0,1)
 
 # Threespace Python API
 import threespace as ts_api
 
-VALID_SENSOR_NAMES = ('chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm','r_lower_arm','r_hand')
+LINK_NAMES = ['chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm','r_lower_arm','r_hand']
+
+LINKS = { 'hips':         {'parent':None},
+          'chest':        {'parent':'hips'},
+          'head':         {'parent':'chest'},
+          'l_upper_arm':  {'parent':'chest'},
+          'l_lower_arm':  {'parent':'l_upper_arm'},
+          'l_hand':       {'parent':'l_lower_arm'},
+          'r_upper_arm':  {'parent':'chest'},
+          'r_lower_arm':  {'parent':'r_upper_arm'},
+          'r_hand':       {'parent':'r_lower_arm'}
+        }
+JOINTS =  { 'spine':      {'parent':'hips',        'child':'chest'},
+            'neck':       {'parent':'chest',        'child':'head'},
+            'l_shoulder': {'parent':'chest',        'child':'l_upper_arm'},
+            'l_elbow':    {'parent':'l_upper_arm',  'child':'l_lower_arm'},
+            'l_wrist':    {'parent':'l_lower_arm',  'child':'l_hand'},
+            'r_shoulder': {'parent':'chest',        'child':'r_upper_arm'},
+            'r_elbow':    {'parent':'r_upper_arm',  'child':'r_lower_arm'},
+            'r_wrist':    {'parent':'r_lower_arm',  'child':'r_hand'}
+          }
+#~ This one is not used at all but may become handy
 MALE_BONE_RATIOS = {'hips':0.086,
                     'chest':0.172,
                     'neck':0.103,
                     'head':4,
                     'l_shoulder':0.099,
                     'l_upper_arm':0.159,
-                    'l_lower_Arm':0.143,
-                    'L_Hand':0.107, 
-                    'R_Shoulder':0.079,
-                    'R_Upper_Arm':0.159,
-                    'R_Lower_Arm':0.143, 
-                    'R_Hand':0.107}
+                    'l_lower_arm':0.143,
+                    'l_hand':0.107, 
+                    'r_shoulder':0.079,
+                    'r_upper_arm':0.159,
+                    'r_lower_arm':0.143, 
+                    'r_hand':0.107}
 
 class GetJointStates(object):
   def __init__(self):
@@ -44,19 +59,21 @@ class GetJointStates(object):
     self.baudrate = self.read_parameter('~baudrate', 921600)
     self.tare_quaternions = self.read_parameter('~tare_quaternions', dict())
     self.mapping = rospy.get_param('~mapping', dict())
+    # TODO: Should define all the sensors?
     # Validate sensors names
     for key in self.sensors.keys():
-      if key not in VALID_SENSOR_NAMES:
+      if key not in LINK_NAMES:
         rospy.logwarn('Invalid sensor name [/sensors/%s]' % key)
         del self.sensors[key]
     # Check consistency of the tare_quaternions dictionary
     for key in self.tare_quaternions.keys():
       if key not in self.sensors.keys():
         rospy.logwarn('Invalid tare quaternion [%s]' % key)
+    # TODO: This consistency should validate complete trees?
     # Check consistency of the mapping dictionary
     for key in self.mapping.keys():
-      if key not in self.sensors.keys():
-        rospy.logwarn('Invalid sensor name [/mapping/%s]' % key)
+      if key not in JOINTS.keys():
+        rospy.logwarn('Invalid joint name [/mapping/%s]' % key)
     
     # Connect to the PVRSystem
     self.pvr_system = ts_api.PVRSystem(com_port=self.com_port, baudrate=self.baudrate)
@@ -65,118 +82,52 @@ class GetJointStates(object):
       id_number = self.sensors[name]
       self.pvr_system.tareWithCurrentOrientation(id_number, quat)
       rospy.loginfo('[%s] tared with: %s' % (name, quat))
-      
-    # Setup the KDL frames for the upper body
-    #~ self.frames['hips'] = Frame(Rotation.RPY(0,1,0), Vector(3,2,4))
-    #~ self.frames['chest'] = Frame(Rotation.RPY(0,1,0), Vector(3,2,4))
-    #~ self.frames['neck'] = Frame(Rotation.RPY(0,1,0), Vector(3,2,4))
-    #~ self.frames['head'] = Frame(Rotation.RPY(0,1,0), Vector(3,2,4))
-    #~ self.frames['chest'] = Frame(Rotation.RPY(0,1,0), Vector(3,2,4))
-    #~ self.frames['chest'] = Frame(Rotation.RPY(0,1,0), Vector(3,2,4))
-    #~ self.frames['chest'] = Frame(Rotation.RPY(0,1,0), Vector(3,2,4))
-    #~ self.frames['chest'] = Frame(Rotation.RPY(0,1,0), Vector(3,2,4))
     
     # Set-up publishers/subscribers
     self.state_pub = rospy.Publisher('joint_states', JointState)
-    self.imu_pub = rospy.Publisher('chest', Imu)
+    
+    # Initialize dictionaries
+    self.raw_orientations = dict()
+    self.link_orientations = dict()
+    self.joint_orientations = dict()
 
   def cb_state_publisher(self, event):
     pass
   
   def run(self):
     while not rospy.is_shutdown():
+      # Get all the sensors orientations
+      self.link_orientations['hips'] = [0,0,0,1]
+      for name in LINK_NAMES:
+        id_number = self.sensors[name]
+        q_raw = self.pvr_system.getTaredOrientationAsQuaternion(id_number)
+        self.raw_orientations[name] = q_raw
+        if q_raw:
+          parent = LINKS[name]['parent']
+          q_parent = self.link_orientations[parent]
+          self.link_orientations[name] =  tr.quaternion_multiply(q_parent, q_raw)
+      
+      if None in self.raw_orientations.values():
+        #~ TODO: Print a warn message about this.
+        continue
+      
       state_msg = JointState()
-      #~ for sensor_name, id_number in self.sensors.items():
-      hips_quat = [0,0,0,1]
-      chest_quat = self.pvr_system.getTaredOrientationAsQuaternion(self.sensors['chest'])
-      head_quat = self.pvr_system.getTaredOrientationAsQuaternion(self.sensors['head'])
-      if hips_quat and chest_quat and head_quat:
-        #~ imu_msg.header = state_msg.header
-        #~ imu_msg.orientation = Quaternion(*quat)
-        #~ self.imu_pub.publish(imu_msg)
-        #~ rpy = tr.euler_from_quaternion(quat, axes='sxyz')
-        #~ for i,joint in enumerate(self.mapping[sensor_name]):
-          #~ if joint != '':
-            #~ state_msg.position.append(rpy[i])
-            #~ state_msg.name.append(joint)
-        state_msg.name = ['hips_roll','hips_pitch','hips_yaw','head_pitch','head_roll','head_yaw']
-        #~ rpy_spine = self.calculate_joint_angles(hips_quat, chest_quat)
-        #~ rpy_neck = self.calculate_joint_angles(chest_quat, head_quat)
-        q_spine = tr.quaternion_multiply(hips_quat, tr.quaternion_inverse(chest_quat))
-        q_neck = tr.quaternion_multiply(chest_quat, tr.quaternion_inverse(head_quat))
-        rpy_spine = tr.euler_from_quaternion(q_spine, 'sxyz')
-        rpy_neck = tr.euler_from_quaternion(q_neck, 'sxyz')
-        #~ rpy_neck[0] *= -1.0
-        state_msg.position = rpy_spine + rpy_neck
+      
+      for name in JOINTS.keys():
+        parent = JOINTS[name]['parent']
+        child = JOINTS[name]['child']
+        q_parent = self.link_orientations[parent]
+        q_child = self.link_orientations[child]
+        self.joint_orientations[name] = tr.quaternion_multiply(q_parent, tr.quaternion_inverse(q_child))
+        rpy = tr.euler_from_quaternion(self.joint_orientations[name], 'sxyz')
+        for i,joint in enumerate(self.mapping[name]):
+          if joint != '':
+            state_msg.position.append(rpy[i])
+            state_msg.name.append(joint)
+
       state_msg.header.stamp = rospy.Time.now()
       state_msg.header.frame_id = 'world'
       self.state_pub.publish(state_msg)
-
-  def calculate_joint_angles(self, parent_quat, child_quat):
-    quat0 = Rotation.Quaternion(*parent_quat)
-    quat1 = Rotation.Quaternion(*child_quat)
-    
-    forward0 = quat0 * UNIT_Z
-    up0 = quat0 * UNIT_Y
-    right0 = quat0 * UNIT_X
-    
-    forward1 = quat1 * UNIT_Z
-    up1 = quat1 * UNIT_Y
-    right1 = quat1 * UNIT_X
-    
-    ## Calculate the angle between the right vectors and the axis vector perpendicular to them
-    angle = math.acos(max(min(dot(right1,right0), 1.0), -1.0))
-    axis = right1 * right0
-    axis.Normalize()
-    
-    ## Transform the forward vector of the child bone so that it is on the same horizontal plane as the forward vector of the parent bone  
-    transformed_forward1 = Rotation.Rot(axis, angle) * forward1
-    transformed_forward1.Normalize()
-    
-    ## Calculate the angle between the transformed forward vector and the forward vector of the parent bone
-    ## This is the angle of the X-axis
-    x_angle = math.acos(max(min(dot(transformed_forward1,forward0), 1.0), -1.0))
-    
-    ## Calculate a vector perpendicular to the transformed forward vector and the forward vector of the parent bone
-    axis = transformed_forward1 * forward0
-    axis.Normalize()
-    
-    ## Transform the forward vector of the child bone so that it is on the same vertical plane as the forward vector of the parent bone
-    ## and to transform the up vector of the child bone to be used in a later calculation
-    axis_ang = Rotation.Rot(axis, x_angle)
-    transformed_forward1 = axis_ang * forward1
-    transformed_forward1.Normalize()
-    transformed_up1 = axis_ang * up1
-    transformed_up1.Normalize()
-    
-    ## Set the sign of y_angle using the axis calculated and the right vector of the parent bone
-    x_angle = math.copysign(x_angle, dot(axis, right0))
-    
-    ## Calculate the angle between the transformed forward vector and the forward vector of the parent bone
-    ## This is the angle of the Y-axis
-    y_angle = math.acos(max(min(dot(transformed_forward1, forward0), 1.0), -1.0))
-    
-    ## Calculate a vector perpendicular to the transformed forward vector and the forward vector of the parent bone
-    axis = transformed_forward1 * forward0
-    axis.Normalize()
-    
-    ## Transform the transformed up vector so that it is on the same vertical plane as the up vector of the parent bone
-    transformed_up1 = Rotation.Rot(axis, x_angle) * transformed_up1
-    transformed_up1.Normalize()
-    
-    ## Set the sign of x_angle using the axis calculated and the up vector of the parent bone
-    y_angle = math.copysign(y_angle, dot(axis, up0))
-    
-    ## Calculate the angle between the transformed up vector and the up vector of the parent bone
-    ## This is the angle of the Z-axis
-    z_angle = math.acos(max(min(dot(transformed_up1, up0), 1.0), -1.0))
-    axis = transformed_up1 * up0
-    axis.Normalize()
-    
-    ## Set the sign of z_angle using the axis calculated and the forward vector of the parent bone
-    z_angle = math.copysign(z_angle, dot(axis, forward0))
-    
-    return [x_angle, y_angle, z_angle]
 
   def read_parameter(self, name, default):
     if not rospy.has_param(name):
@@ -188,3 +139,5 @@ if __name__ == '__main__':
   rospy.init_node('get_joint_states')
   get_js = GetJointStates()
   get_js.run()
+
+
