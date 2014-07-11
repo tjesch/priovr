@@ -44,8 +44,7 @@ import serial
 from sensor_msgs.msg import Imu
 from time import time, sleep
 
-import threespace_api_2 as ts_api
-
+import threespace as ts_api
 
 
 default_port='/dev/ttyACM0'
