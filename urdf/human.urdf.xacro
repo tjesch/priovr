@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<robot name="labrob" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Included URDF/XACRO Files -->
+  <xacro:include filename="$(find priovr)/urdf/materials.urdf.xacro" />
+  
+  <!-- PROPERTY LIST -->
+  <!--All units in m-kg-s-radians unit system -->
+  <property name="M_PI" value="3.1415926535897931" />
+  <property name="M_PI_2" value="1.570796327" />
+  <property name="DEG_TO_RAD" value="0.017453293" />
+  
+  <!-- Main Body-base -->
+  <property name="depth" value="0.05" />
+  <property name="hips_length" value="0.086" />
+  <property name="hips_width" value="0.099" />
+  <property name="spine_length" value="0.172" />
+  <property name="shoulder_width" value="0.198" />
+  <property name="neck_length" value="0.103" />
+  <property name="head_size" value="0.05" />
+  <property name="upper_arm_length" value="0.159" />
+  <property name="arm_radius" value="0.025" />
+  <property name="trunk_length" value="0.258" />
+  <property name="lower_arm_length" value="0.143" />
+  
+  <link name="world"/>
+  
+  <link name="hips_dummy"/>
+  
+  <link name="head_dummy"/>
+  <link name="head_dummy_2"/>
+  
+  <link name="r_upper_arm_dummy"/>
+  <link name="r_upper_arm_dummy_2"/>
+  
+  <link name="r_lower_arm_dummy"/>
+  <link name="r_lower_arm_dummy_2"/>
+  
+  <link name="hips">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${hips_width} ${depth} ${hips_length}"/>
+      </geometry>
+      <material name="Yellow" />
+    </visual>
+  </link>
+  
+  <link name="spine">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${shoulder_width} ${depth} ${spine_length}"/>
+      </geometry>
+      <material name="Blue" />
+    </visual>
+  </link>
+  
+  <link name="head">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="${neck_length}" radius="${head_size}"/>
+      </geometry>
+      <material name="White" />
+    </visual>
+  </link>
+  
+  <link name="r_upper_arm">
+    <visual>
+      <origin xyz="0 0 ${-upper_arm_length/2}" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="${upper_arm_length}" radius="${arm_radius}"/>
+      </geometry>
+      <material name="Black" />
+    </visual>
+  </link>
+  
+  <link name="r_lower_arm">
+    <visual>
+      <origin xyz="0 0 ${-lower_arm_length/2}" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="${lower_arm_length}" radius="${arm_radius}"/>
+      </geometry>
+      <material name="Gray" />
+    </visual>
+  </link>
+  
+  <joint name="hips_p" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="world"/>
+    <child link="hips" />
+    <axis xyz="0 1 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="hips_r" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="hips"/>
+    <child link="hips_dummy" />
+    <axis xyz="1 0 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="hips_y" type="continuous">
+    <origin xyz="0 0 ${hips_length/2 + spine_length/2}" rpy="0 0 0" />
+    <parent link="hips_dummy"/>
+    <child link="spine" />
+    <axis xyz="0 0 1" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="head_p" type="continuous">
+    <origin xyz="0 0 ${spine_length/2+neck_length/2}" rpy="0 0 ${M_PI_2}" />
+    <parent link="spine"/>
+    <child link="head_dummy" />
+    <axis xyz="0 1 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="head_r" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="head_dummy"/>
+    <child link="head_dummy_2" />
+    <axis xyz="1 0 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="head_y" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="head_dummy_2"/>
+    <child link="head" />
+    <axis xyz="0 0 1" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="r_upper_arm_r" type="continuous">
+    <origin xyz="${-shoulder_width/2} 0 ${spine_length/2-arm_radius/2}" rpy="0 ${M_PI_2} 0" />
+    <parent link="spine"/>
+    <child link="r_upper_arm_dummy" />
+    <axis xyz="-1 0 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="r_upper_arm_p" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="r_upper_arm_dummy"/>
+    <child link="r_upper_arm_dummy_2" />
+    <axis xyz="0 1 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="r_upper_arm_y" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="r_upper_arm_dummy_2"/>
+    <child link="r_upper_arm" />
+    <axis xyz="0 0 -1" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="r_lower_arm_r" type="continuous">
+    <origin xyz="0 0 ${-upper_arm_length}" rpy="0 0 0" />
+    <parent link="r_upper_arm"/>
+    <child link="r_lower_arm_dummy" />
+    <axis xyz="-1 0 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="r_lower_arm_p" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="r_lower_arm_dummy"/>
+    <child link="r_lower_arm_dummy_2" />
+    <axis xyz="0 1 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="r_lower_arm_y" type="continuous">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="r_lower_arm_dummy_2"/>
+    <child link="r_lower_arm" />
+    <axis xyz="0 0 -1" rpy="0 0 0" />
+  </joint>
+    
+</robot>
