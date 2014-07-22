@@ -1,0 +1,19 @@
+<launch>
+  <node name="imu_filter_node" pkg="imu_filter_madgwick" type="imu_filter_node" output="screen">
+    <param name="gain" value="0.1"/>
+    <param name="zeta" value="0"/>
+    <param name="use_mag" value="True"/>
+    <param name="publish_tf" value="False"/>
+    <param name="fixed_frame" value="world"/>
+    <param name="constant_dt" value="0.0"/> <!-- if constant_dt_ is 0.0 (default), use IMU timestamp to determine dt -->
+    <remap from="imu/data_raw" to="/head/imu/data_raw" />
+    <remap from="imu/mag" to="/head/imu/mag" />
+    <remap from="imu/data" to="/head/imu/data" />    
+  </node>
+
+  <!-- Combine joint values -->
+  <node name="imu_raw_data" pkg="priovr" type="imu_raw_data.py" output="screen" />
+
+  <!-- Show in Rviz  -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find priovr)/config/imu_data.rviz"/> 
+</launch>

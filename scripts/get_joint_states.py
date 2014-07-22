@@ -106,9 +106,10 @@ class GetJointStates(object):
           parent = LINKS[name]['parent']
           q_parent = self.link_orientations[parent]
           self.link_orientations[name] =  tr.quaternion_multiply(q_parent, q_raw)
+        else:
+          rospy.logwarn('Failed to read quaternion from [%s]' % (name))
       
       if None in self.raw_orientations.values():
-        #~ TODO: Print a warn message about this.
         continue
       
       state_msg = JointState()
@@ -119,11 +120,16 @@ class GetJointStates(object):
         q_parent = self.link_orientations[parent]
         q_child = self.link_orientations[child]
         self.joint_orientations[name] = tr.quaternion_multiply(q_parent, tr.quaternion_inverse(q_child))
-        rpy = tr.euler_from_quaternion(self.joint_orientations[name], 'sxyz')
+        rpy = list(tr.euler_from_quaternion(self.joint_orientations[name], 'sxyz'))
         for i,joint in enumerate(self.mapping[name]):
-          if joint != '':
-            state_msg.position.append(rpy[i])
-            state_msg.name.append(joint)
+          if joint == 'no_joint':
+            continue
+          joint_name = joint
+          if '-' == joint[0]:
+            rpy[i] *= -1.0
+            joint_name = joint[1:]
+          state_msg.position.append(rpy[i])
+          state_msg.name.append(joint_name)
 
       state_msg.header.stamp = rospy.Time.now()
       state_msg.header.frame_id = 'world'
