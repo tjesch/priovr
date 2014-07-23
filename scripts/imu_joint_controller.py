@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 import rospy, serial, sys, math
-from sensor_msgs.msg import Imu, JointState
-from geometry_msgs.msg import Quaternion
-
+# Messages
+from baxter_core_msgs.msg import JointCommand
 # Quaternions tools
 import numpy as np
 import tf.transformations as tr
-
 # Threespace Python API
 import threespace as ts_api
+
 
 LINK_NAMES = ['chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm','r_lower_arm','r_hand']
 
@@ -31,21 +30,8 @@ JOINTS =  { 'spine':      {'parent':'hips',        'child':'chest'},
             'r_elbow':    {'parent':'r_upper_arm',  'child':'r_lower_arm'},
             'r_wrist':    {'parent':'r_lower_arm',  'child':'r_hand'}
           }
-#~ This one is not used at all but may become handy
-MALE_BONE_RATIOS = {'hips':0.086,
-                    'chest':0.172,
-                    'neck':0.103,
-                    'head':4,
-                    'l_shoulder':0.099,
-                    'l_upper_arm':0.159,
-                    'l_lower_arm':0.143,
-                    'l_hand':0.107, 
-                    'r_shoulder':0.079,
-                    'r_upper_arm':0.159,
-                    'r_lower_arm':0.143, 
-                    'r_hand':0.107}
 
-class GetJointStates(object):
+class ImuJointController(object):
   def __init__(self):
     # Read from parameter server
     if not rospy.has_param('~mapping'):
@@ -84,7 +70,8 @@ class GetJointStates(object):
       rospy.loginfo('[%s] tared with: %s' % (name, quat))
     
     # Set-up publishers/subscribers
-    self.state_pub = rospy.Publisher('joint_states', JointState)
+    self.left_arm = rospy.Publisher('/robot/limb/left/joint_command', JointCommand)
+    self.right_arm = rospy.Publisher('/robot/limb/right/joint_command', JointCommand)
     
     # Initialize dictionaries
     self.raw_orientations = dict()
@@ -112,7 +99,11 @@ class GetJointStates(object):
       if None in self.raw_orientations.values():
         continue
       
-      state_msg = JointState()
+      # Define command messages
+      left_msg = JointCommand()
+      right_msg = JointCommand()
+      left_msg.mode = JointCommand().POSITION_MODE
+      right_msg.mode = JointCommand().POSITION_MODE
       
       for name in JOINTS.keys():
         parent = JOINTS[name]['parent']
@@ -128,12 +119,17 @@ class GetJointStates(object):
           if '-' == joint[0]:
             rpy[i] *= -1.0
             joint_name = joint[1:]
-          state_msg.position.append(rpy[i])
-          state_msg.name.append(joint_name)
-
-      state_msg.header.stamp = rospy.Time.now()
-      state_msg.header.frame_id = 'world'
-      self.state_pub.publish(state_msg)
+          # Populate command messages
+          if 'left_' in joint_name:
+            left_msg.names.append(joint_name)
+            left_msg.command.append(rpy[i])
+          elif 'right_' in joint_name:
+            right_msg.names.append(joint_name)
+            right_msg.command.append(rpy[i])
+      
+      # Publish commands
+      self.left_arm.publish(left_msg)
+      self.right_arm.publish(right_msg)
 
   def read_parameter(self, name, default):
     if not rospy.has_param(name):
@@ -142,8 +138,8 @@ class GetJointStates(object):
     
 
 if __name__ == '__main__':
-  rospy.init_node('get_joint_states')
-  get_js = GetJointStates()
-  get_js.run()
+  rospy.init_node('imu_joint_controller')
+  imu_jc = ImuJointController()
+  imu_jc.run()
 
 
