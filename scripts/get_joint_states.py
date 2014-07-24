@@ -102,10 +102,15 @@ class GetJointStates(object):
         id_number = self.sensors[name]
         q_raw = self.pvr_system.getTaredOrientationAsQuaternion(id_number)
         self.raw_orientations[name] = q_raw
+        
+        #orginally changing each orientation by parent's quat
         if q_raw:
           parent = LINKS[name]['parent']
           q_parent = self.link_orientations[parent]
-          self.link_orientations[name] =  tr.quaternion_multiply(q_parent, q_raw)
+          #self.link_orientations[name] =  tr.quaternion_multiply(q_parent, q_raw)
+          
+          #use raw orientation for links
+          self.link_orientations[name] = q_raw
         else:
           rospy.logwarn('Failed to read quaternion from [%s]' % (name))
       
@@ -119,7 +124,7 @@ class GetJointStates(object):
         child = JOINTS[name]['child']
         q_parent = self.link_orientations[parent]
         q_child = self.link_orientations[child]
-        self.joint_orientations[name] = tr.quaternion_multiply(q_parent, tr.quaternion_inverse(q_child))
+        self.joint_orientations[name] = tr.quaternion_multiply(tr.quaternion_inverse(q_parent), q_child)
         rpy = list(tr.euler_from_quaternion(self.joint_orientations[name], 'sxyz'))
         for i,joint in enumerate(self.mapping[name]):
           if joint == 'no_joint':
