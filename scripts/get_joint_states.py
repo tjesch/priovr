@@ -98,17 +98,25 @@ class GetJointStates(object):
     while not rospy.is_shutdown():
       # Get all the sensors orientations
       self.link_orientations['hips'] = [0,0,0,1]
+      #self.link_orientations['hips'] = self.pvr_system.getTaredOrientationAsQuaternion(0)
       for name in LINK_NAMES:
         id_number = self.sensors[name]
         q_raw = self.pvr_system.getTaredOrientationAsQuaternion(id_number)
         self.raw_orientations[name] = q_raw
         if q_raw:
+            self.link_orientations[name] = list(q_raw)
+        else:
+            rospy.logwarn('Failed to read quaternion from [%s]' % (name))
+        
+        """
+        if q_raw:
           parent = LINKS[name]['parent']
           q_parent = self.link_orientations[parent]
           self.link_orientations[name] =  tr.quaternion_multiply(q_parent, q_raw)
+         
         else:
           rospy.logwarn('Failed to read quaternion from [%s]' % (name))
-      
+        """
       if None in self.raw_orientations.values():
         continue
       
@@ -119,7 +127,8 @@ class GetJointStates(object):
         child = JOINTS[name]['child']
         q_parent = self.link_orientations[parent]
         q_child = self.link_orientations[child]
-        self.joint_orientations[name] = tr.quaternion_multiply(q_parent, tr.quaternion_inverse(q_child))
+        #switch which is getting inverted? should be inverse parent?
+        self.joint_orientations[name] = tr.quaternion_multiply(q_child, tr.quaternion_inverse(q_parent))
         rpy = list(tr.euler_from_quaternion(self.joint_orientations[name], 'sxyz'))
         for i,joint in enumerate(self.mapping[name]):
           if joint == 'no_joint':
@@ -134,6 +143,7 @@ class GetJointStates(object):
       state_msg.header.stamp = rospy.Time.now()
       state_msg.header.frame_id = 'world'
       self.state_pub.publish(state_msg)
+      #print self.link_orientations['hips']
 
   def read_parameter(self, name, default):
     if not rospy.has_param(name):

@@ -1,15 +1,18 @@
 # joint: [roll, pitch, yaw]
 # no_joint when not use
 mapping: 
-  spine:      [hips_r, hips_p, hips_y]
+  spine:      [hips_r, -hips_p, hips_y]
   neck:       [head_p, head_r, head_y]
   l_shoulder: [no_joint, no_joint, no_joint]
-  l_wrist:    [r_lower_arm_r, r_lower_arm_p, no_joint]
+  #~ l_wrist:    [r_lower_arm_r, no_joint, no_joint]
+  l_wrist:    [no_joint, no_joint, no_joint]
   
   l_elbow:    [no_joint, no_joint, no_joint]  
-  r_shoulder: [-r_upper_arm_r, r_upper_arm_p, r_upper_arm_y]
+  r_shoulder: [r_upper_arm_r, -r_upper_arm_p, -r_upper_arm_y]
   #~ l_elbow:    [r_upper_arm_r, r_upper_arm_p, r_upper_arm_y]
   #~ r_shoulder: [no_joint, no_joint, no_joint]  
   
-  r_elbow:    [no_joint, no_joint, r_lower_arm_y]
+  #~ r_elbow: [no_joint, no_joint, no_joint]  
+  r_elbow: [-r_lower_arm_r, r_lower_arm_p, r_lower_arm_y]  
+  #~ r_elbow:    [no_joint, r_lower_arm_p, r_lower_arm_y]
   r_wrist:    [no_joint, no_joint, no_joint]
