@@ -85,7 +85,7 @@ def talker():
     for id in partlist:  
         pub[id[0]] = rospy.Publisher(id[1], Imu)
         imuMsg[id[0]] = Imu()
-        pvr_base.tareWithCurrentOrientation(id[0])
+        pvr_base.tareWithCurrentOrientation(id[0], [0,0,0,1])
     pub[10] = rospy.Publisher('diff', Imu)
     imuMsg[10] = Imu()
 
