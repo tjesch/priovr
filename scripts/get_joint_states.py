@@ -128,7 +128,7 @@ class GetJointStates(object):
         q_parent = self.link_orientations[parent]
         q_child = self.link_orientations[child]
         #switch which is getting inverted? should be inverse parent?
-        self.joint_orientations[name] = tr.quaternion_multiply(q_child, tr.quaternion_inverse(q_parent))
+        self.joint_orientations[name] = tr.quaternion_multiply(tr.quaternion_inverse(q_parent), q_child)
         rpy = list(tr.euler_from_quaternion(self.joint_orientations[name], 'sxyz'))
         for i,joint in enumerate(self.mapping[name]):
           if joint == 'no_joint':
