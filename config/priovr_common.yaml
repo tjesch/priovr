@@ -17,5 +17,5 @@ tare_quaternions:
   l_lower_arm:  [0, 0, 0, 1]
   l_hand:       [0, 0, 0, 1]
   r_upper_arm:  [0, 0, 1, 0]
-  r_lower_arm:  [0, 0, 1, 0]
+  r_lower_arm:  [0, 0.70710678, 0, 0.70710678]
   r_hand:       [0, 0.70710678, 0, 0.70710678]
