@@ -39,6 +39,15 @@ JOINTS =  { 'spine':      {'parent':'hips',        'child':'chest'},
 
 NO_JOINT = 'no_joint'
 
+# Helper functions
+def detect_present_sensors():
+  pvr_system = ts_api.PVRSystem(com_port='/dev/ttyACM0', baudrate=921600)
+  found = []
+  for id_number in range(20):
+    if pvr_system.getAllRawComponentSensorData(id_number)
+      found.append(id_number)
+  return found
+
 class ImuJointController(object):
   def __init__(self):
     # Read from parameter server
@@ -148,8 +157,8 @@ class ImuJointController(object):
     if not rospy.has_param(name):
       rospy.logwarn('Parameter [%s] not found, using default: %s' % (name, default))
     return rospy.get_param(name, default)
-    
 
+# Main
 if __name__ == '__main__':
   rospy.init_node('imu_joint_controller')
   try:
@@ -157,5 +166,3 @@ if __name__ == '__main__':
     imu_jc.run()
   except:
     pass
-
-
