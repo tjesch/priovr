@@ -1,27 +1,18 @@
 #!/usr/bin/env python
-import rospy, serial, sys, math
-from sensor_msgs.msg import Imu, JointState
+# General imports
+import rospy, sys, math
+# Messages
+from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Quaternion
-
 # Quaternions tools
 import numpy as np
 import tf.transformations as tr
-
 # Threespace Python API
 import threespace as ts_api
 
-LINK_NAMES = ['chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm','r_lower_arm','r_hand']
 
-LINKS = { 'hips':         {'parent':None},
-          'chest':        {'parent':'hips'},
-          'head':         {'parent':'chest'},
-          'l_upper_arm':  {'parent':'chest'},
-          'l_lower_arm':  {'parent':'l_upper_arm'},
-          'l_hand':       {'parent':'l_lower_arm'},
-          'r_upper_arm':  {'parent':'chest'},
-          'r_lower_arm':  {'parent':'r_upper_arm'},
-          'r_hand':       {'parent':'r_lower_arm'}
-        }
+SENSOR_NAMES = ['chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm','r_lower_arm','r_hand']
+
 JOINTS =  { 'spine':      {'parent':'hips',        'child':'chest'},
             'neck':       {'parent':'chest',        'child':'head'},
             'l_shoulder': {'parent':'chest',        'child':'l_upper_arm'},
@@ -31,52 +22,51 @@ JOINTS =  { 'spine':      {'parent':'hips',        'child':'chest'},
             'r_elbow':    {'parent':'r_upper_arm',  'child':'r_lower_arm'},
             'r_wrist':    {'parent':'r_lower_arm',  'child':'r_hand'}
           }
-#~ This one is not used at all but may become handy
-MALE_BONE_RATIOS = {'hips':0.086,
-                    'chest':0.172,
-                    'neck':0.103,
-                    'head':4,
-                    'l_shoulder':0.099,
-                    'l_upper_arm':0.159,
-                    'l_lower_arm':0.143,
-                    'l_hand':0.107, 
-                    'r_shoulder':0.079,
-                    'r_upper_arm':0.159,
-                    'r_lower_arm':0.143, 
-                    'r_hand':0.107}
+
+NO_JOINT = 'no_joint'
+
 
 class GetJointStates(object):
   def __init__(self):
     # Read from parameter server
-    if not rospy.has_param('~mapping'):
-      rospy.logerr('Parameter [~mapping] not found')
-      sys.exit(1)
     if not rospy.has_param('~sensors'):
       rospy.logerr('Parameter [~sensors] not found')
       sys.exit(1)
-    self.sensors = rospy.get_param('~sensors', dict())
+    if not rospy.has_param('~mapping'):
+      rospy.logerr('Parameter [~mapping] not found')
+      sys.exit(1)
+    self.tare_quaternions = self.read_parameter('~tare_quaternions', dict())
+    self.reference_frame = self.read_parameter('~reference_frame', 'world')
     self.com_port = self.read_parameter('~com_port', '/dev/ttyACM0')
     self.baudrate = self.read_parameter('~baudrate', 921600)
-    self.tare_quaternions = self.read_parameter('~tare_quaternions', dict())
     self.mapping = rospy.get_param('~mapping', dict())
-    # TODO: Should define all the sensors?
-    # Validate sensors names
-    for key in self.sensors.keys():
-      if key not in LINK_NAMES:
-        rospy.logwarn('Invalid sensor name [/sensors/%s]' % key)
-        del self.sensors[key]
+    self.sensors = rospy.get_param('~sensors', dict())
+    # Connect to the PVRSystem
+    rospy.loginfo('Connecting to the PVRSystem')
+    try:
+      self.pvr_system = ts_api.PVRSystem(com_port=self.com_port, baudrate=self.baudrate)
+    except:
+      rospy.logerr('Failed to connect to the PVRSystem. (Did you add user to the dialout group?)')
+      sys.exit(1)
+    # Validate sensors names and that they are connected
+    for name, id_number in self.sensors.items():
+      if name not in SENSOR_NAMES:
+        rospy.logwarn('Invalid sensor name [/sensors/%s]' % name)
+        del self.sensors[name]
+      if not self.pvr_system.getAllRawComponentSensorData(id_number):
+        rospy.logwarn('Sensor [/sensors/%s] not connected' % name)
+        del self.sensors[name]
+    rospy.loginfo('Connection to the PVRSystem succedded')
+    # Check consistency of the mapping dictionary
+    for sensor_name in self.mapping.keys():
+      if sensor_name not in JOINTS.keys():
+        rospy.logwarn('Invalid priovr sensor name [/mapping/%s]' % sensor_name)
+        del self.mapping[sensor_name]
     # Check consistency of the tare_quaternions dictionary
     for key in self.tare_quaternions.keys():
       if key not in self.sensors.keys():
         rospy.logwarn('Invalid tare quaternion [%s]' % key)
-    # TODO: This consistency should validate complete trees?
-    # Check consistency of the mapping dictionary
-    for key in self.mapping.keys():
-      if key not in JOINTS.keys():
-        rospy.logwarn('Invalid joint name [/mapping/%s]' % key)
-    
-    # Connect to the PVRSystem
-    self.pvr_system = ts_api.PVRSystem(com_port=self.com_port, baudrate=self.baudrate)
+        del self.tare_quaternions[key]
     # Tare the sensors defined in tare_quaternions
     for name, quat in self.tare_quaternions.items():
       id_number = self.sensors[name]
@@ -96,48 +86,45 @@ class GetJointStates(object):
   
   def run(self):
     while not rospy.is_shutdown():
-      # Get all the sensors orientations
+      fail_sensor_read = False
       self.link_orientations['hips'] = [0,0,0,1]
-      for name in LINK_NAMES:
-        id_number = self.sensors[name]
-        q_raw = self.pvr_system.getTaredOrientationAsQuaternion(id_number)
-        self.raw_orientations[name] = q_raw
-        
-        #orginally changing each orientation by parent's quat
-        if q_raw:
-          parent = LINKS[name]['parent']
-          q_parent = self.link_orientations[parent]
-          #self.link_orientations[name] =  tr.quaternion_multiply(q_parent, q_raw)
-          
-          #use raw orientation for links
-          self.link_orientations[name] = q_raw
+      for name, id_number in self.sensors.items():
+        # Get the tared orientation
+        q_tared = self.pvr_system.getTaredOrientationAsQuaternion(id_number)
+        if q_tared:
+          self.link_orientations[name] = q_tared
         else:
           rospy.logwarn('Failed to read quaternion from [%s]' % (name))
+          fail_sensor_read = True
       
-      if None in self.raw_orientations.values():
+      # Skip reading if we missed any sensor reading
+      if fail_sensor_read:
         continue
       
+      # Populate the JointState msg
       state_msg = JointState()
-      
       for name in JOINTS.keys():
         parent = JOINTS[name]['parent']
         child = JOINTS[name]['child']
         q_parent = self.link_orientations[parent]
         q_child = self.link_orientations[child]
+        # This orientation is the relative between parent and child
         self.joint_orientations[name] = tr.quaternion_multiply(tr.quaternion_inverse(q_parent), q_child)
+        # Split it in 3 DoF (roll, pitch and yaw)
         rpy = list(tr.euler_from_quaternion(self.joint_orientations[name], 'rxyz'))
         for i,joint in enumerate(self.mapping[name]):
           if joint == 'no_joint':
             continue
           joint_name = joint
+          # Invert sign if required in the mapping dictionary
           if '-' == joint[0]:
             rpy[i] *= -1.0
             joint_name = joint[1:]
           state_msg.position.append(rpy[i])
           state_msg.name.append(joint_name)
-
+      # Publish the JointState msg
+      state_msg.header.frame_id = self.reference_frame
       state_msg.header.stamp = rospy.Time.now()
-      state_msg.header.frame_id = 'world'
       self.state_pub.publish(state_msg)
 
   def read_parameter(self, name, default):

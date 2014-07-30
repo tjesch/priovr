@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-import rospy, serial, sys, math
+import rospy, sys, math
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import Quaternion, Vector3Stamped, Vector3
 
 # Quaternions tools
 import numpy as np
 import tf.transformations as tr
-import PyKDL as KDL
 
 # Threespace Python API
 import threespace as ts_api
