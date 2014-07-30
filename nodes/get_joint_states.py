@@ -26,6 +26,17 @@ JOINTS =  { 'spine':      {'parent':'hips',        'child':'chest'},
 NO_JOINT = 'no_joint'
 
 
+# Helper functions
+def detect_present_sensors():
+  pvr_system = ts_api.PVRSystem(com_port='/dev/ttyACM0', baudrate=921600)
+  found = []
+  for id_number in range(20):
+    if pvr_system.getAllRawComponentSensorData(id_number):
+      found.append(id_number)
+  return found
+
+
+# The Class
 class GetJointStates(object):
   def __init__(self):
     # Read from parameter server
@@ -77,12 +88,8 @@ class GetJointStates(object):
     self.state_pub = rospy.Publisher('joint_states', JointState)
     
     # Initialize dictionaries
-    self.raw_orientations = dict()
     self.link_orientations = dict()
     self.joint_orientations = dict()
-
-  def cb_state_publisher(self, event):
-    pass
   
   def run(self):
     while not rospy.is_shutdown():
