@@ -76,7 +76,7 @@ class GetJointStates(object):
     # Check consistency of the tare_quaternions dictionary
     for key in self.tare_quaternions.keys():
       if key not in self.sensors.keys():
-        rospy.logwarn('Invalid tare quaternion [%s]' % key)
+        rospy.logwarn('Deleting tare quaternion for [%s]' % key)
         del self.tare_quaternions[key]
     # Tare the sensors defined in tare_quaternions
     for name, quat in self.tare_quaternions.items():
@@ -97,7 +97,11 @@ class GetJointStates(object):
       self.link_orientations['hips'] = [0,0,0,1]
       for name, id_number in self.sensors.items():
         # Get the tared orientation
-        q_tared = self.pvr_system.getTaredOrientationAsQuaternion(id_number)
+        try:
+          q_tared = self.pvr_system.getTaredOrientationAsQuaternion(id_number)
+        except:
+          fail_sensor_read = True
+          break
         if q_tared:
           self.link_orientations[name] = q_tared
         else:
@@ -110,7 +114,7 @@ class GetJointStates(object):
       
       # Populate the JointState msg
       state_msg = JointState()
-      for name in JOINTS.keys():
+      for name in self.mapping.keys():
         parent = JOINTS[name]['parent']
         child = JOINTS[name]['child']
         q_parent = self.link_orientations[parent]
