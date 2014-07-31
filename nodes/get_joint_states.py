@@ -69,10 +69,13 @@ class GetJointStates(object):
         del self.sensors[name]
     rospy.loginfo('Connection to the PVRSystem succedded')
     # Check consistency of the mapping dictionary
-    for sensor_name in self.mapping.keys():
-      if sensor_name not in JOINTS.keys():
-        rospy.logwarn('Invalid priovr sensor name [/mapping/%s]' % sensor_name)
-        del self.mapping[sensor_name]
+    for joint in self.mapping.keys():
+      invalid_joint = joint not in JOINTS.keys()
+      invalid_parent = JOINTS[joint]['parent'] not in self.sensors.keys()
+      invalid_child = JOINTS[joint]['child'] not in self.sensors.keys()
+      if invalid_joint or invalid_parent or invalid_child:
+        rospy.logwarn('Invalid joint defined in [/mapping/%s]' % joint)
+        del self.mapping[joint]
     # Check consistency of the tare_quaternions dictionary
     for key in self.tare_quaternions.keys():
       if key not in self.sensors.keys():
@@ -105,7 +108,7 @@ class GetJointStates(object):
         if q_tared:
           self.link_orientations[name] = q_tared
         else:
-          rospy.logwarn('Failed to read quaternion from [%s]' % (name))
+          rospy.logwarn('Failed getTaredOrientationAsQuaternion from [%s]' % (name))
           fail_sensor_read = True
       
       # Skip reading if we missed any sensor reading
