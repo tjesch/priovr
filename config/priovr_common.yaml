@@ -1,3 +1,6 @@
+com_port: /dev/ttyACM0
+baudrate: 921600
+
 # VALID_SENSOR_NAMES = ('chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm','r_lower_arm','r_hand')
 sensors:
   chest:        0

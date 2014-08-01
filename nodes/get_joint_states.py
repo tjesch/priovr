@@ -52,6 +52,7 @@ class GetJointStates(object):
     self.baudrate = self.read_parameter('~baudrate', 921600)
     self.mapping = rospy.get_param('~mapping', dict())
     self.sensors = rospy.get_param('~sensors', dict())
+    
     # Connect to the PVRSystem
     rospy.loginfo('Connecting to the PVRSystem')
     try:
@@ -59,6 +60,7 @@ class GetJointStates(object):
     except:
       rospy.logerr('Failed to connect to the PVRSystem. (Did you add user to the dialout group?)')
       sys.exit(1)
+    
     # Validate sensors names and that they are connected
     for name, id_number in self.sensors.items():
       if name not in SENSOR_NAMES:
@@ -74,25 +76,34 @@ class GetJointStates(object):
       invalid_parent = JOINTS[joint]['parent'] not in self.sensors.keys()
       invalid_child = JOINTS[joint]['child'] not in self.sensors.keys()
       if invalid_joint or invalid_parent or invalid_child:
-        rospy.logwarn('Invalid joint defined in [/mapping/%s]' % joint)
+        rospy.logdebug('Invalid joint defined in [/mapping/%s]' % joint)
         del self.mapping[joint]
     # Check consistency of the tare_quaternions dictionary
     for key in self.tare_quaternions.keys():
       if key not in self.sensors.keys():
-        rospy.logwarn('Deleting tare quaternion for [%s]' % key)
+        rospy.logdebug('Deleting tare quaternion for [%s]' % key)
         del self.tare_quaternions[key]
     # Tare the sensors defined in tare_quaternions
     for name, quat in self.tare_quaternions.items():
       id_number = self.sensors[name]
       self.pvr_system.tareWithCurrentOrientation(id_number, quat)
-      rospy.loginfo('[%s] tared with: %s' % (name, quat))
+      rospy.logdebug('[%s] tared with: %s' % (name, quat))
     
     # Set-up publishers/subscribers
-    self.state_pub = rospy.Publisher('joint_states', JointState)
+    self.state_pub = rospy.Publisher('/priovr/joint_states', JointState)
+    
+    # Start streaming to receive the joysticks data
+    self.pvr_system.startStreaming()
+    # Shutdown hookup for stoping PVR streaming
+    rospy.on_shutdown(self.shutdown)
     
     # Initialize dictionaries
     self.link_orientations = dict()
     self.joint_orientations = dict()
+    
+  def shutdown(self):
+    if self.pvr_system:
+      self.pvr_system.stopStreaming()
   
   def run(self):
     while not rospy.is_shutdown():
@@ -108,7 +119,7 @@ class GetJointStates(object):
         if q_tared:
           self.link_orientations[name] = q_tared
         else:
-          rospy.logwarn('Failed getTaredOrientationAsQuaternion from [%s]' % (name))
+          rospy.logdebug('Failed getTaredOrientationAsQuaternion from [%s]' % (name))
           fail_sensor_read = True
       
       # Skip reading if we missed any sensor reading

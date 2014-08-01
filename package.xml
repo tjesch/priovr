@@ -17,6 +17,7 @@
   
   <run_depend>geometry_msgs</run_depend>
   <run_depend>joint_state_publisher</run_depend>
+  <run_depend>joy</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>tf</run_depend>
