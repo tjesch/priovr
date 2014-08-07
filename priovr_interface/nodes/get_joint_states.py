@@ -52,6 +52,7 @@ class GetJointStates(object):
     self.baudrate = self.read_parameter('~baudrate', 921600)
     self.mapping = rospy.get_param('~mapping', dict())
     self.sensors = rospy.get_param('~sensors', dict())
+    self.debug = rospy.get_param('~debug', False)
     
     # Connect to the PVRSystem
     rospy.loginfo('Connecting to the PVRSystem')
@@ -91,6 +92,8 @@ class GetJointStates(object):
     
     # Set-up publishers/subscribers
     self.state_pub = rospy.Publisher('/priovr/joint_states', JointState)
+    if self.debug:
+      self.debug_pub = rospy.Publisher('/priovr/orientations', JointState)
     
     # Start streaming to receive the joysticks data
     self.pvr_system.startStreaming()

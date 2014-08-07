@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>priovr</name>
+  <description>
+    The priovr metapackage
+  </description>
+  
+  <version>0.1.0</version>
+  <license>BSD</license>
+  <maintainer email="tjudsonesch@gmail.com">tjesch</maintainer>
+  <maintainer email="fsuarez6@gmail.com">fsuarez6</maintainer>  
+  <url type="website">https://github.com/tjesch/priovr</url>
+  <url type="repository">https://github.com/tjesch/priovr</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>priovr_description</run_depend>
+  <run_depend>priovr_interface</run_depend>
+  <run_depend>priovr_msgs</run_depend>
+  
+
+  <export>
+    <metapackage/>
+  </export>
+
+</package>

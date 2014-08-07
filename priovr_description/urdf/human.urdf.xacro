@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot name="labrob" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!-- Included URDF/XACRO Files -->
-  <xacro:include filename="$(find priovr)/urdf/materials.urdf.xacro" />
+  <xacro:include filename="$(find priovr_description)/urdf/materials.urdf.xacro" />
   
   <!-- PROPERTY LIST -->
   <!--All units in m-kg-s-radians unit system -->

@@ -2,7 +2,7 @@
   <arg name="fake_state" default="false"/>
   
   <!-- send robot urdf to param server -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find priovr)/urdf/human.urdf.xacro'"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find priovr_description)/urdf/human.urdf.xacro'"/>
 
   <!-- send fake joint values -->
   <group if="$(arg fake_state)">
@@ -13,9 +13,9 @@
   
   <!-- PrioVR node -->
   <group unless="$(arg fake_state)">
-    <node name="get_joint_states" pkg="priovr" type="get_joint_states.py" output="screen">
-      <rosparam command="load" file="$(find priovr)/config/priovr_common.yaml"/>
-      <rosparam command="load" file="$(find priovr)/config/human.yaml"/>
+    <node name="get_joint_states" pkg="priovr_interface" type="get_joint_states.py" output="screen">
+      <rosparam command="load" file="$(find priovr_interface)/config/priovr_common.yaml"/>
+      <rosparam command="load" file="$(find priovr_interface)/config/human.yaml"/>
     </node>
   </group>
 
@@ -23,5 +23,5 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 
   <!-- Show in Rviz  -->
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find priovr)/config/human.rviz"/> 
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find priovr_interface)/config/human.rviz"/> 
 </launch>

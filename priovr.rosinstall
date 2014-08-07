@@ -1,3 +1,3 @@
 - git: {local-name: priovr, uri: 'https://github.com/tjesch/priovr', version: master}
 
-- git: {local-name: priovr, uri: 'https://github.com/ccny-ros-pkg/imu_tools.git', version: hydro}
+- git: {local-name: imu_tools, uri: 'https://github.com/ccny-ros-pkg/imu_tools.git', version: hydro}

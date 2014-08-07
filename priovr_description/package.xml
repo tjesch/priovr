@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>priovr</name>
+  <name>priovr_description</name>
   <version>0.1.0</version>
-  <description>The priovr package</description>
+  <description>The priovr_description package</description>
 
   <maintainer email="tjudsonesch@gmail.com">tjesch</maintainer>
   <maintainer email="fsuarez6@gmail.com">fsuarez6</maintainer>
@@ -11,14 +11,9 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
   <build_depend>tf</build_depend>
   
-  <run_depend>geometry_msgs</run_depend>
   <run_depend>joint_state_publisher</run_depend>
-  <run_depend>joy</run_depend>
-  <run_depend>sensor_msgs</run_depend>
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>tf</run_depend>
 

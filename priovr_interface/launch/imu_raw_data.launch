@@ -12,8 +12,8 @@
   </node>
 
   <!-- Combine joint values -->
-  <node name="imu_raw_data" pkg="priovr" type="imu_raw_data.py" output="screen" />
+  <node name="imu_raw_data" pkg="priovr_interface" type="imu_raw_data.py" output="screen" />
 
   <!-- Show in Rviz  -->
-  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find priovr)/config/imu_data.rviz"/> 
+  <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find priovr_interface)/config/imu_data.rviz"/> 
 </launch>

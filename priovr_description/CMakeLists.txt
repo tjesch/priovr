@@ -1,18 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(priovr)
+project(priovr_description)
 
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  sensor_msgs
   tf
 )
 
-catkin_python_setup()
-
 catkin_package(
-CATKIN_DEPENDS 
-  geometry_msgs 
-  sensor_msgs 
+CATKIN_DEPENDS
+  joint_state_publisher
+  robot_state_publisher
   tf
 )
 
