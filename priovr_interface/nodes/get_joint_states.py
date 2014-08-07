@@ -4,6 +4,7 @@ import rospy, sys, math
 # Messages
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import Quaternion
+from priovr_msgs.msg import QuaternionArray
 # Quaternions tools
 import numpy as np
 import tf.transformations as tr
@@ -93,7 +94,7 @@ class GetJointStates(object):
     # Set-up publishers/subscribers
     self.state_pub = rospy.Publisher('/priovr/joint_states', JointState)
     if self.debug:
-      self.debug_pub = rospy.Publisher('/priovr/orientations', JointState)
+      self.debug_pub = rospy.Publisher('/priovr/quaternion_array', QuaternionArray)
     
     # Start streaming to receive the joysticks data
     self.pvr_system.startStreaming()
@@ -112,6 +113,7 @@ class GetJointStates(object):
     while not rospy.is_shutdown():
       fail_sensor_read = False
       self.link_orientations['hips'] = [0,0,0,1]
+      quat_array_msg = QuaternionArray()
       for name, id_number in self.sensors.items():
         # Get the tared orientation
         try:
@@ -121,6 +123,8 @@ class GetJointStates(object):
           break
         if q_tared:
           self.link_orientations[name] = q_tared
+          quat_array_msg.name.append(name)
+          quat_array_msg.quaternion.append(Quaternion(*q_tared))
         else:
           rospy.logdebug('Failed getTaredOrientationAsQuaternion from [%s]' % (name))
           fail_sensor_read = True
@@ -154,6 +158,10 @@ class GetJointStates(object):
       state_msg.header.frame_id = self.reference_frame
       state_msg.header.stamp = rospy.Time.now()
       self.state_pub.publish(state_msg)
+      # Publish the QuaternionArray msg
+      if self.debug:
+        quat_array_msg.header = state_msg.header
+        self.debug_pub.publish(quat_array_msg)
 
   def read_parameter(self, name, default):
     if not rospy.has_param(name):
