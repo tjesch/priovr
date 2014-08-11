@@ -75,7 +75,7 @@ class GetJointStates(object):
     # Check consistency of the mapping dictionary
     for joint in self.mapping.keys():
       invalid_joint = joint not in JOINTS.keys()
-      invalid_parent = JOINTS[joint]['parent'] not in self.sensors.keys()
+      invalid_parent = JOINTS[joint]['parent'] not in self.sensors.keys() + ['hips']
       invalid_child = JOINTS[joint]['child'] not in self.sensors.keys()
       if invalid_joint or invalid_parent or invalid_child:
         rospy.logdebug('Invalid joint defined in [/mapping/%s]' % joint)
