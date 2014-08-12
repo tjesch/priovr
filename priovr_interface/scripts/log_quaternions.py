@@ -8,7 +8,7 @@ from priovr_msgs.msg import QuaternionArray
 class LogQuaternions(object):
   def __init__(self):
     # Read from parameter server
-    self.topic = rospy.get_param('~topic', '/priovr/quaternion_array')
+    self.topic = rospy.get_param('~topic', '/priovr/sensor_orientations')
     self.data_key = rospy.get_param('~data_key', 'range')
     # Initial values
     self.whole_data = dict()

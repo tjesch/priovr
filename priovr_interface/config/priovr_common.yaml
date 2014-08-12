@@ -1,5 +1,6 @@
 com_port: /dev/ttyACM0
 baudrate: 921600
+frame_id: world
 
 # VALID_SENSOR_NAMES = ('chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm','r_lower_arm','r_hand')
 sensors:
@@ -19,8 +20,8 @@ tare_quaternions:
   l_upper_arm:  [0, 0, 0, 1]
   l_lower_arm:  [0, 0, 0, 1]
   l_hand:       [0, 0, 0, 1]
-  r_upper_arm:  [0, 0, 1, 0]
-  r_lower_arm:  [0, 0, 1, 0]
-  r_hand:       [0, 0, 1, 0]
+  r_upper_arm:  [0, 0, 0, 1]
+  r_lower_arm:  [0, 0, 0, 1]
+  r_hand:       [0, 0, 0, 1]
   #~ r_lower_arm:  [0.0, 0.70710678118654746, 0.0, 0.70710678118654746]
   #~ r_hand:       [0.0, 0.70710678118654746, 0.0, 0.70710678118654746]

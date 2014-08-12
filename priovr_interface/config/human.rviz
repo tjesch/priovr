@@ -3,9 +3,7 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded:
-        - /RobotModel1
-        - /TF1
+      Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 463
   - Class: rviz/Selection
@@ -51,107 +49,110 @@ Visualization Manager:
     - Alpha: 0.5
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        head:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        head_dummy:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        head_dummy_2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        hips:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        hips_dummy:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_upper_arm:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        r_upper_arm_dummy:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        r_upper_arm_dummy_2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        spine:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        world:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        head:
-          Value: true
-        head_dummy:
-          Value: true
-        head_dummy_2:
-          Value: true
-        hips:
-          Value: true
-        hips_dummy:
-          Value: true
-        r_upper_arm:
-          Value: true
-        r_upper_arm_dummy:
-          Value: true
-        r_upper_arm_dummy_2:
-          Value: true
-        spine:
-          Value: true
-        world:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: false
       Tree:
-        world:
-          hips:
-            hips_dummy:
-              spine:
-                head_dummy:
-                  head_dummy_2:
-                    head:
-                      {}
-                r_upper_arm_dummy:
-                  r_upper_arm_dummy_2:
-                    r_upper_arm:
-                      {}
+        {}
       Update Interval: 0
+      Value: false
+    - Alpha: 1
+      Axes Length: 0.2
+      Axes Radius: 0.02
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: spine
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /priovr/spine_pose
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.2
+      Axes Radius: 0.02
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: neck
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /priovr/neck_pose
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.2
+      Axes Radius: 0.02
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.2
+      Head Radius: 0.1
+      Name: r_shoulder
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /priovr/r_shoulder_pose
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.2
+      Axes Radius: 0.02
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: r_elbow
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /priovr/r_elbow_pose
+      Value: true
+    - Alpha: 1
+      Axes Length: 0.2
+      Axes Radius: 0.02
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.3
+      Head Radius: 0.1
+      Name: r_wrist
+      Shaft Length: 1
+      Shaft Radius: 0.05
+      Shape: Axes
+      Topic: /priovr/r_wrist_pose
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: visualization_marker
+      Name: skeleton
+      Namespaces:
+        skeleton: true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
@@ -177,22 +178,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.873139
+      Distance: 3.07626
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.0221341
-        Y: -0.0394012
-        Z: 0.11845
+        X: 0.125715
+        Y: -0.0885549
+        Z: 0.324251
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 0.275399
+      Pitch: 0
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.71816
+      Yaw: 0
     Saved: ~
 Window Geometry:
   Displays:
@@ -210,5 +211,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1313
-  X: 53
+  X: 58
   Y: 24
