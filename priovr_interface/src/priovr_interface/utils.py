@@ -25,15 +25,16 @@ JOINT_NAMES = ['spine', 'neck', 'l_shoulder', 'l_elbow', 'l_wrist', 'r_shoulder'
 
 SENSOR_NAMES = ['chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm','r_lower_arm','r_hand']
 
+#                     Position wrt parent   Rotation wrt to Parent          Rotation correction
 BONE_RATIOS = {
-    'chest':        [Vector(0, 0, 0.258),   Rotation.RotZ(3.0*math.pi/2.0), None],
-    'head':         [Vector(0, 0, 0.103),   Rotation.RotY(math.pi),         None],
-    'l_upper_arm':  [Vector(0, 0, 0.159),   Rotation.Identity(),            None],
-    'l_lower_arm':  [Vector(0, 0, 0.143),   Rotation.Identity(),            None],
-    'l_hand':       [Vector(0, 0, 0.107),   Rotation.Identity(),            None],
-    'r_upper_arm':  [Vector(0.099, 0, 0),   Rotation.RotY(-math.pi/2.0),    None],
-    'r_lower_arm':  [Vector(0, 0, -0.159),  Rotation.Identity(),            None],
-    'r_hand':       [Vector(0, 0, -0.143),  Rotation.Identity(),            None]
+    'chest':        [ Vector(0.042, 0, 0.115),  Rotation.RotZ(3.0*math.pi/2.0), Rotation.Identity()],
+    'head':         [ Vector(0, 0, 0.103),  Rotation.RotY(math.pi),         Rotation.Identity()],
+    'l_upper_arm':  [ Vector(0, 0, 0.159),  Rotation.Identity(),            Rotation.Identity()],
+    'l_lower_arm':  [ Vector(0, 0, 0.143),  Rotation.Identity(),            Rotation.Identity()],
+    'l_hand':       [ Vector(0, 0, 0.107),  Rotation.Identity(),            Rotation.Identity()],
+    'r_upper_arm':  [ Vector(0.099, 0, 0),  Rotation.RotY(-math.pi/2.0),    Rotation.Identity()],
+    'r_lower_arm':  [ Vector(0, 0, -0.159), Rotation.Identity(),            Rotation.Identity()],
+    'r_hand':       [ Vector(0, 0, -0.143), Rotation.Identity(),            Rotation.RotX(math.pi) * Rotation.RotZ(-math.pi/2.0)]
 }
 
 

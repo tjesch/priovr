@@ -12,9 +12,6 @@ from tf_conversions import posemath
 
 from priovr_interface.utils import *
 
-
-joints = ['spine', 'r_shoulder', 'r_elbow']
-
 # The Class
 class PriovrFK(object):
   def __init__(self):
@@ -28,7 +25,7 @@ class PriovrFK(object):
     self.vis_pub = rospy.Publisher('visualization_marker', Marker)
     rospy.Subscriber('/priovr/sensor_orientations', QuaternionArray, self.orientations_cb)
     # Initial values
-    self.scale = 3
+    self.scale = 3.35
     self.sensor_orientations = dict()
     self.frames = dict()
     # Start the timer that will publish the joint states
@@ -44,10 +41,12 @@ class PriovrFK(object):
     marker.type = marker.LINE_LIST
     marker.ns = 'skeleton'
     marker.action = marker.ADD
-    # Populate the points
+    # Populate the points with the frames positions
     marker.points.append(Point(0,0,0))   # Origin
     for joint in JOINT_NAMES:
       if self.frames.has_key(joint):
+        # It needs to be added twice because it will draw a line 
+        # between each pair of points, so 0-1, 2-3, 4-5, ...
         marker.points.append(Point(*self.frames[joint].p))
         marker.points.append(Point(*self.frames[joint].p))
     marker.points.pop()
@@ -76,7 +75,7 @@ class PriovrFK(object):
       if (parent in msg.name) and (child in msg.name):
         q_parent = self.sensor_orientations[parent]
         q_child = self.sensor_orientations[child]
-        rot = BONE_RATIOS[child][1] * q_parent.Inverse() * q_child
+        rot = BONE_RATIOS[child][1] * q_parent.Inverse() * q_child * BONE_RATIOS[child][2]
         pos = BONE_RATIOS[child][0] * self.scale
         self.frames[joint] = PyKDL.Frame(rot, pos)
         if p_joint:
