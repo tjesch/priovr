@@ -67,7 +67,6 @@ class PriovrFK(object):
     for i, name in enumerate(msg.name):
       self.sensor_orientations[name] = kdl_quaternion_from_msg(msg.quaternion[i])
     # Build Frames
-    self.frames = dict()
     for joint in JOINT_NAMES:
       parent = HUMAN_JOINTS[joint]['parent']
       child = HUMAN_JOINTS[joint]['child']
