@@ -1,0 +1,7 @@
+<launch>
+  <!-- PrioVR node -->
+  <node name="sensor_imus" pkg="priovr_interface" type="sensor_imus.py" output="screen">
+    <rosparam command="load" file="$(find priovr_interface)/config/priovr_common.yaml"/>
+    <param name="enable_joysticks" value="false"/>
+  </node>
+</launch>

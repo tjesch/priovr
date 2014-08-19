@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_message_files(FILES
+  ImuArray.msg
   QuaternionArray.msg
   RPY.msg
   RPYArray.msg
