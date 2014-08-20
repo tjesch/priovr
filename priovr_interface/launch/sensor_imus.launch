@@ -4,4 +4,8 @@
     <rosparam command="load" file="$(find priovr_interface)/config/priovr_common.yaml"/>
     <param name="enable_joysticks" value="false"/>
   </node>
+  
+  <node name="get_joint_states" pkg="priovr_interface" type="get_joint_states.py" output="screen">
+    <rosparam command="load" file="$(find priovr_interface)/config/human.yaml"/>
+  </node>
 </launch>

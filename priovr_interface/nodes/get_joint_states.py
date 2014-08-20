@@ -3,7 +3,7 @@
 import rospy, sys, math
 # Messages
 from sensor_msgs.msg import JointState
-from priovr_msgs.msg import QuaternionArray
+from priovr_msgs.msg import ImuArray, QuaternionArray
 # Quaternions tools
 import numpy as np
 
@@ -31,15 +31,21 @@ class GetJointStates(object):
     # Set-up publishers/subscribers
     self.state_pub = rospy.Publisher('/priovr/joint_states', JointState)
     rospy.Subscriber('/priovr/sensor_orientations', QuaternionArray, self.orientations_cb)
+    rospy.Subscriber('/priovr/sensor_imus', ImuArray, self.imus_cb)
     # Initialize dictionaries
     self.link_orientations = dict()
-    self.joint_orientations = dict()
+    self.angular_velocity = dict()
     # Start the timer that will publish the joint states
     self.timer = rospy.Timer(rospy.Duration(1.0/self.publish_rate), self.publish_state)
     # Shutdown hookup for stoping the publish timer
     rospy.on_shutdown(self.shutdown)
     # Spin!
     rospy.spin()
+  
+  def imus_cb(self, msg):
+    self.angular_velocity = dict()
+    for i, name in enumerate(msg.name):
+      self.angular_velocity[name] = vector_to_array(msg.angular_velocity[i])
 
   def orientations_cb(self, msg):
     self.link_orientations = dict()
@@ -47,18 +53,31 @@ class GetJointStates(object):
       self.link_orientations[name] = quaternion_to_array(msg.quaternion[i])
 
   def publish_state(self, event):
+    # Lock a copy to avoid using deleted objects
+    sensor_orientations = dict(self.link_orientations)
+    angular_velocity = dict(self.angular_velocity)
     # Populate the JointState msg
     state_msg = JointState()
     for name in self.mapping.keys():
       parent = HUMAN_JOINTS[name]['parent']
       child = HUMAN_JOINTS[name]['child']
-      if not self.link_orientations.has_key(parent) or not self.link_orientations.has_key(child):
+      position_available = sensor_orientations.has_key(parent) and sensor_orientations.has_key(child)
+      velocity_available = angular_velocity.has_key(parent) and angular_velocity.has_key(child)
+      # Noting available
+      if not (position_available or velocity_available):
         continue
-      q_parent = self.link_orientations[parent]
-      q_child = self.link_orientations[child]
-      # Split it in 3 DoF (roll, pitch and yaw)
-      # TODO: Fucking Euler angles!!!
-      rpy = calculate_joint_angles(q_parent, q_child)
+      if position_available:
+        q_parent = sensor_orientations[parent]
+        q_child = sensor_orientations[child]
+        # Split it in 3 DoF (roll, pitch and yaw)
+        # TODO: Fucking Euler angles!!!
+        rpy = calculate_joint_angles(q_parent, q_child)
+      else:
+        rpy = np.zeros(3)
+      if velocity_available:
+        ang_vel = angular_velocity[parent] - angular_velocity[child]
+      else:
+        ang_vel = np.zeros(3)
       for i,joint in enumerate(self.mapping[name]):
         if joint == 'no_joint':
           continue
@@ -66,8 +85,10 @@ class GetJointStates(object):
         # Invert sign if required in the mapping dictionary
         if '-' == joint[0]:
           rpy[i] *= -1.0
+          ang_vel[i] *= -1.0
           joint_name = joint[1:]
         state_msg.position.append(rpy[i])
+        state_msg.velocity.append(ang_vel[i])
         state_msg.name.append(joint_name)
     # Publish the JointState msg
     state_msg.header.frame_id = self.frame_id

@@ -10,7 +10,18 @@ import PyKDL
 from PyKDL import Rotation, Vector, dot
 
 
-# Variables
+### VARIABLES ###
+
+# Joysticks
+LEFT_Z_BUTTON = 0
+LEFT_C_BUTTON = 1
+RIGHT_Z_BUTTON = 2
+RIGHT_C_BUTTON = 3
+LEFT_X_AXIS = 0
+LEFT_Y_AXIS = 1
+RIGHT_X_AXIS = 2
+RIGHT_Y_AXIS = 3
+
 HUMAN_JOINTS = {'spine':      {'parent':'hips',         'child':'chest',        'parent_joint': None},
                 'neck':       {'parent':'chest',        'child':'head',         'parent_joint': 'spine'},
                 'l_shoulder': {'parent':'chest',        'child':'l_upper_arm',  'parent_joint': 'spine'},
@@ -182,3 +193,6 @@ def read_parameter(name, default):
   if not rospy.has_param(name):
     rospy.logwarn('Parameter [%s] not found, using default: %s' % (name, default))
   return rospy.get_param(name, default)
+
+def vector_to_array(vect):
+  return np.array([vect.x, vect.y, vect.z])
