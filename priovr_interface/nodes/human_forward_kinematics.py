@@ -25,7 +25,7 @@ class PriovrFK(object):
     self.vis_pub = rospy.Publisher('visualization_marker', Marker)
     rospy.Subscriber('/priovr/sensor_orientations', QuaternionArray, self.orientations_cb)
     # Initial values
-    self.scale = 3.35
+    self.scale = 2.6
     self.sensor_orientations = dict()
     self.frames = dict()
     # Start the timer that will publish the joint states

@@ -1,0 +1,21 @@
+<launch>
+  <arg name="rviz" default="true"/>
+  
+  <!-- PrioVR nodes -->
+  <node name="sensor_orientations" pkg="priovr_interface" type="sensor_orientations.py" output="screen">
+    <rosparam command="load" file="$(find priovr_interface)/config/priovr_common.yaml"/>
+    <param name="enable_joysticks" value="false" />
+    <param name="frame_id" value="base" />
+  </node>
+
+  <node name="human_forward_kinematics" pkg="priovr_interface" type="human_forward_kinematics.py" output="screen">
+    <rosparam command="load" file="$(find priovr_interface)/config/priovr_common.yaml"/>
+    <param name="publish_rate" value="100" />
+    <param name="frame_id" value="base" />
+  </node>
+
+  <!-- Show in Rviz  -->
+  <group if="$(arg rviz)">
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find priovr_interface)/config/human_fk.rviz"/> 
+  </group>
+</launch>

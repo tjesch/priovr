@@ -38,7 +38,7 @@ SENSOR_NAMES = ['chest','head','l_upper_arm','l_lower_arm','l_hand','r_upper_arm
 
 #                     Position wrt parent   Rotation wrt to Parent          Rotation correction
 BONE_RATIOS = {
-    'chest':        [ Vector(0.042, 0, 0.115),  Rotation.RotZ(3.0*math.pi/2.0), Rotation.Identity()],
+    'chest':        [ Vector(0.0246, 0, 0.06),  Rotation.RotZ(3.0*math.pi/2.0), Rotation.Identity()],
     'head':         [ Vector(0, 0, 0.103),  Rotation.RotY(math.pi),         Rotation.Identity()],
     'l_upper_arm':  [ Vector(0, 0, 0.159),  Rotation.Identity(),            Rotation.Identity()],
     'l_lower_arm':  [ Vector(0, 0, 0.143),  Rotation.Identity(),            Rotation.Identity()],
