@@ -36,6 +36,7 @@ class PriovrFK(object):
     rospy.spin()
 
   def draw_robot(self):
+    frames = dict(self.frames)
     marker = Marker()
     marker.id = 0;
     marker.type = marker.LINE_LIST
@@ -47,8 +48,8 @@ class PriovrFK(object):
       if self.frames.has_key(joint):
         # It needs to be added twice because it will draw a line 
         # between each pair of points, so 0-1, 2-3, 4-5, ...
-        marker.points.append(Point(*self.frames[joint].p))
-        marker.points.append(Point(*self.frames[joint].p))
+        marker.points.append(Point(*frames[joint].p))
+        marker.points.append(Point(*frames[joint].p))
     marker.points.pop()
     # Appearance Settings
     marker.scale.x = 0.01
